@@ -1,8 +1,12 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import BoardFrame from '../../components/BoardFrame'
 import GameLayout from '../../components/GameLayout'
+import SoundBar from '../../components/SoundBar'
+import WelcomeDialog from '../../components/WelcomeDialog'
 import { useSound } from '../../lib/useSound'
 import { useShake } from '../../lib/useShake'
+import { useGameMusic } from '../../lib/useGameMusic'
+import { MUSIC_THEMES } from '../../lib/musicThemes'
 import { useTimer } from '../../lib/useTimer'
 import { newSeed } from '../../lib/random'
 import { clock } from '../../lib/format'
@@ -26,8 +30,14 @@ export default function Sudoku() {
 
   const play = useSound(soundOn)
   const [shaking, shake] = useShake()
+  const [musicMuted, setMusicMuted, analyser] = useGameMusic(MUSIC_THEMES.sudoku)
   const [seconds, resetTimer] = useTimer(status === 'playing')
   const cellRefs = useRef([])
+  const welcomeRef = useRef(null)
+
+  useEffect(() => {
+    welcomeRef.current?.showModal()
+  }, [])
 
   const conflicts = useMemo(() => (values ? findConflicts(values) : new Set()), [values])
   const highlight = useMemo(() => {
@@ -157,29 +167,55 @@ export default function Sudoku() {
 
   if (status === 'select') {
     return (
-      <GameLayout
-        board={
-          <div className="index">
-            <p className="index__lead">Pilih tingkat kesulitan untuk membangkitkan papan baru.</p>
-            <div className="diff-row">
-              {Object.entries(DIFFICULTIES).map(([key, d]) => (
-                <button key={key} type="button" className="diff-btn" onClick={() => startGame(key)}>
-                  {d.label}
-                </button>
-              ))}
+      <>
+        <GameLayout
+          board={
+            <div className="index">
+              <p className="index__lead">Pilih tingkat kesulitan untuk membangkitkan papan baru.</p>
+              <div className="diff-row">
+                {Object.entries(DIFFICULTIES).map(([key, d]) => (
+                  <button key={key} type="button" className="diff-btn" onClick={() => startGame(key)}>
+                    {d.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        }
-        panel={
-          <section className="block">
-            <h2 className="block__title">Sudoku</h2>
-            <p className="verdict__note">
-              Papan sembilan kali sembilan dengan tepat satu jawaban untuk setiap tingkat
-              kesulitan.
-            </p>
-          </section>
-        }
-      />
+          }
+          panel={
+            <section className="block">
+              <h2 className="block__title">Sudoku</h2>
+              <p className="verdict__note">
+                Papan sembilan kali sembilan dengan tepat satu jawaban untuk setiap tingkat
+                kesulitan.
+              </p>
+              <div className="controls">
+                <div className="btn-row">
+                  <button
+                    type="button"
+                    className="btn btn--sm"
+                    aria-pressed={!musicMuted}
+                    onClick={() => setMusicMuted((m) => !m)}
+                  >
+                    Musik: {musicMuted ? 'mati' : 'aktif'}
+                  </button>
+                  <SoundBar
+                    analyser={analyser}
+                    muted={musicMuted}
+                    onToggle={() => setMusicMuted((m) => !m)}
+                  />
+                </div>
+              </div>
+            </section>
+          }
+        />
+        <WelcomeDialog
+          ref={welcomeRef}
+          name="Sudoku"
+          blurb="Isi papan sembilan kali sembilan, dibangkitkan baru dengan jawaban tunggal."
+          musicMuted={musicMuted}
+          onToggleMusic={() => setMusicMuted((m) => !m)}
+        />
+      </>
     )
   }
 
@@ -287,17 +323,39 @@ export default function Sudoku() {
         <button type="button" className="btn btn--solid" onClick={() => setStatus('select')}>
           Papan baru
         </button>
-        <button
-          type="button"
-          className="btn"
-          aria-pressed={soundOn}
-          onClick={() => setSoundOn((s) => !s)}
-        >
-          Suara: {soundOn ? 'aktif' : 'mati'}
-        </button>
+        <div className="btn-row">
+          <button
+            type="button"
+            className="btn btn--sm"
+            aria-pressed={soundOn}
+            onClick={() => setSoundOn((s) => !s)}
+          >
+            Suara: {soundOn ? 'aktif' : 'mati'}
+          </button>
+          <button
+            type="button"
+            className="btn btn--sm"
+            aria-pressed={!musicMuted}
+            onClick={() => setMusicMuted((m) => !m)}
+          >
+            Musik: {musicMuted ? 'mati' : 'aktif'}
+          </button>
+          <SoundBar analyser={analyser} muted={musicMuted} onToggle={() => setMusicMuted((m) => !m)} />
+        </div>
       </div>
     </>
   )
 
-  return <GameLayout board={boardEl} panel={panel} />
+  return (
+    <>
+      <GameLayout board={boardEl} panel={panel} />
+      <WelcomeDialog
+        ref={welcomeRef}
+        name="Sudoku"
+        blurb="Isi papan sembilan kali sembilan, dibangkitkan baru dengan jawaban tunggal."
+        musicMuted={musicMuted}
+        onToggleMusic={() => setMusicMuted((m) => !m)}
+      />
+    </>
+  )
 }

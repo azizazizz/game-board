@@ -1,8 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import BoardFrame from '../../components/BoardFrame'
 import GameLayout from '../../components/GameLayout'
 import { Disc } from '../../components/Marks'
+import SoundBar from '../../components/SoundBar'
+import WelcomeDialog from '../../components/WelcomeDialog'
 import { useSound } from '../../lib/useSound'
+import { useGameMusic } from '../../lib/useGameMusic'
+import { MUSIC_THEMES } from '../../lib/musicThemes'
 import { pad } from '../../lib/format'
 import { chooseColumn } from './bot'
 import { BLUE, COLS, RED, ROWS, boardFromMoves, findWinner, isFull, landingRow } from './logic'
@@ -18,6 +22,12 @@ export default function ConnectFour() {
   const [hoverCol, setHoverCol] = useState(null)
 
   const play = useSound(soundOn)
+  const [musicMuted, setMusicMuted, analyser] = useGameMusic(MUSIC_THEMES.connectfour)
+  const welcomeRef = useRef(null)
+
+  useEffect(() => {
+    welcomeRef.current?.showModal()
+  }, [])
 
   const { board, lastIndex } = useMemo(() => boardFromMoves(moves), [moves])
   const winner = useMemo(() => findWinner(board), [board])
@@ -199,17 +209,39 @@ export default function ConnectFour() {
         >
           Hapus perolehan
         </button>
-        <button
-          type="button"
-          className="btn"
-          aria-pressed={soundOn}
-          onClick={() => setSoundOn((s) => !s)}
-        >
-          Suara: {soundOn ? 'aktif' : 'mati'}
-        </button>
+        <div className="btn-row">
+          <button
+            type="button"
+            className="btn btn--sm"
+            aria-pressed={soundOn}
+            onClick={() => setSoundOn((s) => !s)}
+          >
+            Suara: {soundOn ? 'aktif' : 'mati'}
+          </button>
+          <button
+            type="button"
+            className="btn btn--sm"
+            aria-pressed={!musicMuted}
+            onClick={() => setMusicMuted((m) => !m)}
+          >
+            Musik: {musicMuted ? 'mati' : 'aktif'}
+          </button>
+          <SoundBar analyser={analyser} muted={musicMuted} onToggle={() => setMusicMuted((m) => !m)} />
+        </div>
       </div>
     </>
   )
 
-  return <GameLayout board={boardEl} panel={panel} />
+  return (
+    <>
+      <GameLayout board={boardEl} panel={panel} />
+      <WelcomeDialog
+        ref={welcomeRef}
+        name="Connect Four"
+        blurb="Empat cakram berjajar di papan tujuh kali enam, lawan manusia atau bot."
+        musicMuted={musicMuted}
+        onToggleMusic={() => setMusicMuted((m) => !m)}
+      />
+    </>
+  )
 }

@@ -1,6 +1,10 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import GameLayout from '../../components/GameLayout'
+import SoundBar from '../../components/SoundBar'
+import WelcomeDialog from '../../components/WelcomeDialog'
 import { useSound } from '../../lib/useSound'
+import { useGameMusic } from '../../lib/useGameMusic'
+import { MUSIC_THEMES } from '../../lib/musicThemes'
 import { useTimer } from '../../lib/useTimer'
 import { newSeed } from '../../lib/random'
 import { clock, pad } from '../../lib/format'
@@ -51,8 +55,14 @@ export default function Minesweeper() {
   const [soundOn, setSoundOn] = useState(true)
 
   const play = useSound(soundOn)
+  const [musicMuted, setMusicMuted, analyser] = useGameMusic(MUSIC_THEMES.minesweeper)
   const [seconds, resetTimer] = useTimer(status === 'playing')
   const longPress = useRef({ id: null, fired: false })
+  const welcomeRef = useRef(null)
+
+  useEffect(() => {
+    welcomeRef.current?.showModal()
+  }, [])
 
   const flaggedCount = flagged.filter(Boolean).length
   const remaining = mines - flaggedCount
@@ -276,17 +286,39 @@ export default function Minesweeper() {
         <button type="button" className="btn btn--solid" onClick={() => resetBoard()}>
           Papan baru
         </button>
-        <button
-          type="button"
-          className="btn"
-          aria-pressed={soundOn}
-          onClick={() => setSoundOn((s) => !s)}
-        >
-          Suara: {soundOn ? 'aktif' : 'mati'}
-        </button>
+        <div className="btn-row">
+          <button
+            type="button"
+            className="btn btn--sm"
+            aria-pressed={soundOn}
+            onClick={() => setSoundOn((s) => !s)}
+          >
+            Suara: {soundOn ? 'aktif' : 'mati'}
+          </button>
+          <button
+            type="button"
+            className="btn btn--sm"
+            aria-pressed={!musicMuted}
+            onClick={() => setMusicMuted((m) => !m)}
+          >
+            Musik: {musicMuted ? 'mati' : 'aktif'}
+          </button>
+          <SoundBar analyser={analyser} muted={musicMuted} onToggle={() => setMusicMuted((m) => !m)} />
+        </div>
       </div>
     </>
   )
 
-  return <GameLayout board={boardEl} panel={panel} />
+  return (
+    <>
+      <GameLayout board={boardEl} panel={panel} />
+      <WelcomeDialog
+        ref={welcomeRef}
+        name="Minesweeper"
+        blurb="Buka petak aman dan tandai ranjau, dari papan Pemula sampai Mahir."
+        musicMuted={musicMuted}
+        onToggleMusic={() => setMusicMuted((m) => !m)}
+      />
+    </>
+  )
 }

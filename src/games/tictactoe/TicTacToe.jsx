@@ -1,8 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import BoardFrame from '../../components/BoardFrame'
 import GameLayout from '../../components/GameLayout'
 import Scoresheet from '../../components/Scoresheet'
+import SoundBar from '../../components/SoundBar'
+import WelcomeDialog from '../../components/WelcomeDialog'
 import { useSound } from '../../lib/useSound'
+import { useGameMusic } from '../../lib/useGameMusic'
+import { MUSIC_THEMES } from '../../lib/musicThemes'
 import { coord, fileLabels, pad, rankLabels } from '../../lib/format'
 import { calculateWinner } from './logic'
 
@@ -63,6 +67,14 @@ export default function TicTacToe() {
   const [round, setRound] = useState(1)
 
   const play = useSound(soundOn)
+  const [musicMuted, setMusicMuted, analyser] = useGameMusic(MUSIC_THEMES.tictactoe)
+  const welcomeRef = useRef(null)
+
+  // sapa pemain setiap kali permainan ini dibuka (efek berjalan sekali per
+  // pemasangan komponen, yaitu setiap kali dinavigasi masuk ke sini)
+  useEffect(() => {
+    welcomeRef.current?.showModal()
+  }, [])
 
   const currentSquares = history[currentMove]
   const xIsNext = currentMove % 2 === 0
@@ -220,17 +232,39 @@ export default function TicTacToe() {
         >
           Hapus perolehan
         </button>
-        <button
-          type="button"
-          className="btn"
-          aria-pressed={soundOn}
-          onClick={() => setSoundOn((s) => !s)}
-        >
-          Suara: {soundOn ? 'aktif' : 'mati'}
-        </button>
+        <div className="btn-row">
+          <button
+            type="button"
+            className="btn btn--sm"
+            aria-pressed={soundOn}
+            onClick={() => setSoundOn((s) => !s)}
+          >
+            Suara: {soundOn ? 'aktif' : 'mati'}
+          </button>
+          <button
+            type="button"
+            className="btn btn--sm"
+            aria-pressed={!musicMuted}
+            onClick={() => setMusicMuted((m) => !m)}
+          >
+            Musik: {musicMuted ? 'mati' : 'aktif'}
+          </button>
+          <SoundBar analyser={analyser} muted={musicMuted} onToggle={() => setMusicMuted((m) => !m)} />
+        </div>
       </div>
     </>
   )
 
-  return <GameLayout board={board} panel={panel} />
+  return (
+    <>
+      <GameLayout board={board} panel={panel} />
+      <WelcomeDialog
+        ref={welcomeRef}
+        name="Tic Tac Toe"
+        blurb="Tiga berjajar di papan tiga kali tiga, dengan lembar langkah yang bisa diputar ulang."
+        musicMuted={musicMuted}
+        onToggleMusic={() => setMusicMuted((m) => !m)}
+      />
+    </>
+  )
 }

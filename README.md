@@ -31,7 +31,7 @@ tab akan mengulang dari awal).
 
 ```
 src/
-├─ App.jsx                 # daftar isi, nav, dan dialog aturan main
+├─ App.jsx                 # beranda, daftar game, nav, dan dialog aturan main
 ├─ index.css                # satu titik masuk Tailwind: @theme token desain,
 │                             @layer components (kelas bersama & per-game lewat
 │                             @apply), plus keyframe animasi dan CSS SVG bespoke
@@ -40,12 +40,18 @@ src/
 │  ├─ GameLayout.jsx         (papan di kiri, panel catatan di kanan)
 │  ├─ Marks.jsx              (tanda X/O, cakram, cincin langkah legal)
 │  ├─ Scoresheet.jsx         (lembar langkah yang bisa diputar ulang)
-│  └─ RulesDialog.jsx        (dialog "Aturan main" per game)
+│  ├─ RulesDialog.jsx        (dialog "Aturan main" per game)
+│  ├─ WelcomeDialog.jsx      (dialog "Selamat datang" saat game dibuka)
+│  └─ SoundBar.jsx           (visualizer musik yang bisa diklik untuk mute)
 ├─ lib/
 │  ├─ random.js              (PRNG berbenih untuk papan acak yang bisa diulang)
 │  ├─ useSound.js            (efek suara sintesis WebAudio)
 │  ├─ useShake.js            (getar sesaat untuk langkah tidak sah)
 │  ├─ useTimer.js            (pencatat waktu untuk Minesweeper/Sudoku)
+│  ├─ useMenuMusic.js        (pemutar berkas musik untuk Daftar Game)
+│  ├─ musicEngine.js         (step-sequencer prosedural Web Audio API)
+│  ├─ musicThemes.js         (tangga nada + pola nada per game)
+│  ├─ useGameMusic.js        (hook React yang membungkus musicEngine)
 │  └─ format.js              (notasi papan, padding angka, label file/rank)
 └─ games/
    ├─ registry.js            # satu sumber daftar game + metadata + aturan
@@ -99,14 +105,75 @@ pnpm build      # build produksi ke folder dist/
 pnpm preview    # jalankan hasil build secara lokal untuk diperiksa
 ```
 
+## Musik
+
+Ada dua jalur musik yang terpisah:
+
+- **Daftar Game** memutar satu berkas musik nyata dari
+  `public/music-game-board.mp3` (format mp3, nama berkas harus persis itu),
+  di-loop lewat `src/lib/useMenuMusic.js`. Musik ini berhenti total begitu
+  sebuah game dibuka. Tanpa berkas ini aplikasi tetap berjalan normal, hanya
+  saja tidak ada suara (percobaan pemutaran gagal secara senyap).
+- **Setiap game** punya musik latarnya sendiri, dibangkitkan langsung lewat
+  Web Audio API — bukan berkas audio. `src/lib/musicEngine.js` adalah
+  step-sequencer dua suara (bas + melodi) dengan penjadwalan model
+  "lookahead" standar; `src/lib/musicThemes.js` mendefinisikan tangga nada,
+  tempo, dan pola nada yang berbeda untuk tiap permainan (ceria dan cepat
+  untuk Tic Tac Toe, tegang dan jarang untuk Minesweeper, tenang untuk
+  Sudoku, dst). `src/lib/useGameMusic.js` membungkusnya jadi hook React;
+  musik dimulai saat komponen game tampil dan berhenti (dijeda, bukan
+  ditutup — supaya aman terhadap siklus mount ganda React StrictMode di
+  mode pengembangan) saat game ditinggalkan.
+
+Setiap panel game punya **soundbar** (`src/components/SoundBar.jsx`) di
+sebelah tombol "Suara" — sebuah visualizer yang benar-benar membaca data
+frekuensi langsung dari `AnalyserNode` musik yang sedang berbunyi lewat
+`requestAnimationFrame`, bukan animasi hias. Klik soundbar untuk
+mematikan/menyalakan musik game tersebut.
+
+Sebagian peramban memblokir audio otomatis sebelum ada interaksi pengguna;
+musik akan mulai begitu pengguna mengklik atau menekan tombol apa saja di
+halaman.
+
 ## Cara bermain
 
-Buka aplikasi, pilih salah satu dari enam permainan di daftar isi. Setiap
-permainan punya:
+Membuka aplikasi menampilkan tiga lapis navigasi:
 
-- Tombol **Kembali ke daftar isi** dan **Aturan main** di bilah nav atas.
+1. **Beranda** — halaman penuh tersendiri, tanpa bingkai kartu apa pun
+   (lihat komponen `Home` di [`src/App.jsx`](src/App.jsx)). Tidak ada bilah
+   header terpisah — nama "Game Board" cukup tampil sekali, di `<section>`
+   kiri, supaya tidak ada dua judul berdempetan. Kolom kiri berisi
+   `<section>` (nama) lalu tombol **"Masuk ke game"** lalu `<article>`
+   (penjelasan singkat aplikasi ini); `<aside>` di kanan berisi galeri
+   cuplikan layar keenam game — murni gambar, kartunya **tidak bisa
+   diklik**; `footer` penuh lebar di bawah. Tombol "Masuk ke game" adalah
+   satu-satunya jalan menuju Daftar Game. Taruh cuplikan layar tiap game di
+   `public/screenshots/<id-game>.png` (id sama seperti di
+   [`src/games/registry.js`](src/games/registry.js), mis. `tictactoe.png`,
+   `chess.png`) — begitu berkasnya ada, gambar otomatis menggantikan kotak
+   placeholder "SCREENSHOT ...". Beranda dilewati kalau tautan sudah
+   menunjuk langsung ke sebuah game (mis. memuat ulang halaman saat berada
+   di `#chess`).
+2. **Daftar Game** — juga halaman penuh tanpa bingkai kartu, senada dengan
+   Beranda. Satu tombol kecil berkotak **"Kembali ke beranda"** di atas
+   daftar (bukan bilah nav selebar halaman) membawa balik ke Beranda.
+3. **Game** — satu-satunya layar yang memakai kartu kertas bergaris tepi
+   (`.page`/`.sheet`) dengan masthead dan bilah nav — sengaja dibedakan
+   supaya "sedang bermain" terasa berbeda dari "sedang menjelajah". Klik
+   judul **"GAME BOARD"** di masthead kapan saja untuk kembali ke Beranda;
+   "Kembali ke daftar game" untuk selangkah saja. Setiap kali sebuah game
+   dibuka, muncul dialog **"Selamat datang di ..."** otomatis (lihat
+   `src/components/WelcomeDialog.jsx`) berisi ringkasan singkat dan tombol
+   musik, sebelum pemain menekan "Mulai bermain". Musik game itu sendiri
+   sudah mulai berbunyi begitu papan tampil, bukan menunggu dialog ditutup.
+
+Di dalam sebuah game, ada:
+
+- Tombol **Kembali ke daftar game** dan **Aturan main** di bilah nav atas.
 - Panel di sisi kanan berisi status permainan, skor, dan kendali (papan
-  baru, hapus skor, suara).
+  baru, hapus skor, suara efek, dan **tombol "Musik: aktif/mati"** yang
+  eksplisit di samping soundbar-nya — mematikan musik tidak harus lewat
+  mengklik soundbar).
 - Lembar langkah / riwayat yang bisa diklik untuk memutar ulang posisi
   sebelumnya (Tic Tac Toe, Connect Four, Othello, Catur).
 

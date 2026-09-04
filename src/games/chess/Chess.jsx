@@ -1,11 +1,15 @@
 import { Chess as ChessEngine } from 'chess.js'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import BoardFrame from '../../components/BoardFrame'
 import GameLayout from '../../components/GameLayout'
 import Scoresheet from '../../components/Scoresheet'
 import { Ring } from '../../components/Marks'
+import SoundBar from '../../components/SoundBar'
+import WelcomeDialog from '../../components/WelcomeDialog'
 import { useSound } from '../../lib/useSound'
 import { useShake } from '../../lib/useShake'
+import { useGameMusic } from '../../lib/useGameMusic'
+import { MUSIC_THEMES } from '../../lib/musicThemes'
 import { fileLabels, pad, rankLabels } from '../../lib/format'
 import { PIECE_NAME, SIDE_NAME, replay, squareAt } from './logic'
 import PieceGlyph from './PieceGlyph'
@@ -23,6 +27,12 @@ export default function Chess() {
 
   const play = useSound(soundOn)
   const [shaking, shake] = useShake()
+  const [musicMuted, setMusicMuted, analyser] = useGameMusic(MUSIC_THEMES.chess)
+  const welcomeRef = useRef(null)
+
+  useEffect(() => {
+    welcomeRef.current?.showModal()
+  }, [])
 
   const game = useMemo(() => replay(moves, viewPly), [moves, viewPly])
   const board = game.board()
@@ -306,17 +316,39 @@ export default function Chess() {
         >
           Hapus perolehan
         </button>
-        <button
-          type="button"
-          className="btn"
-          aria-pressed={soundOn}
-          onClick={() => setSoundOn((s) => !s)}
-        >
-          Suara: {soundOn ? 'aktif' : 'mati'}
-        </button>
+        <div className="btn-row">
+          <button
+            type="button"
+            className="btn btn--sm"
+            aria-pressed={soundOn}
+            onClick={() => setSoundOn((s) => !s)}
+          >
+            Suara: {soundOn ? 'aktif' : 'mati'}
+          </button>
+          <button
+            type="button"
+            className="btn btn--sm"
+            aria-pressed={!musicMuted}
+            onClick={() => setMusicMuted((m) => !m)}
+          >
+            Musik: {musicMuted ? 'mati' : 'aktif'}
+          </button>
+          <SoundBar analyser={analyser} muted={musicMuted} onToggle={() => setMusicMuted((m) => !m)} />
+        </div>
       </div>
     </>
   )
 
-  return <GameLayout board={boardEl} panel={panel} />
+  return (
+    <>
+      <GameLayout board={boardEl} panel={panel} />
+      <WelcomeDialog
+        ref={welcomeRef}
+        name="Catur"
+        blurb="Aturan lengkap lewat chess.js: rokade, en passant, promosi, skak, dan skakmat."
+        musicMuted={musicMuted}
+        onToggleMusic={() => setMusicMuted((m) => !m)}
+      />
+    </>
+  )
 }

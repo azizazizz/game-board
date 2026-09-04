@@ -81,6 +81,14 @@
     @apply m-0 text-[clamp(1.6rem,4vw,2.3rem)] font-normal tracking-[0.16em] uppercase;
   }
 
+  .masthead__title-btn {
+    /* elemen button mereset text-transform/tracking bawaan Tailwind, jadi
+       gaya teks masthead ditegaskan ulang di sini, bukan hanya diwariskan */
+    @apply border-0 bg-transparent p-0 m-0 text-[clamp(1.6rem,4vw,2.3rem)] font-normal tracking-[0.16em] uppercase
+      hover:text-ink-soft
+      focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-4;
+  }
+
   .masthead__meta {
     @apply m-0 font-sans text-[0.68rem] tracking-[0.18em] uppercase text-ink-soft [font-variant-numeric:tabular-nums];
   }
@@ -102,13 +110,87 @@
       focus-visible:outline-2 focus-visible:outline-ink focus-visible:-outline-offset-[3px];
   }
 
+  /* ---------- halaman penuh bersama: beranda dan daftar isi, tanpa kartu .page/.sheet ---------- */
+  .flat-page {
+    @apply min-h-full flex flex-col bg-paper text-ink;
+  }
+
+  .flat-page__footer {
+    @apply mt-auto py-2.5 px-[clamp(16px,4vw,56px)] border-t-[3px] border-double border-ink font-sans text-[0.66rem] tracking-[0.14em] uppercase text-ink-soft text-center;
+  }
+
+  /* ---------- beranda ---------- */
+  .home-page__body {
+    @apply grid gap-x-10 gap-y-8 p-[clamp(16px,4vw,56px)] [grid-template-columns:minmax(280px,38%)_1fr] max-[760px]:grid-cols-1;
+  }
+
+  .home-page__left {
+    @apply flex flex-col gap-6;
+  }
+
+  .home-page__aside {
+    @apply min-w-0;
+  }
+
+  /* section (nama) -> tombol -> article (penjelasan), bersusun di kolom kiri */
+  .home__brand-eyebrow {
+    @apply m-0 font-sans text-[0.62rem] tracking-[0.2em] uppercase text-ink-soft;
+  }
+
+  .home__brand-title {
+    @apply m-0 text-[1.7rem] leading-[1.15];
+  }
+
+  .home__article p {
+    @apply m-0 max-w-[56ch] text-[0.92rem] leading-[1.55] text-ink-soft;
+  }
+
+  .home__aside-title {
+    @apply m-0 mb-4 pb-1.5 border-b border-rule font-sans text-[0.62rem] font-bold tracking-[0.2em] uppercase text-ink-soft;
+  }
+
+  .home__grid {
+    @apply grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))];
+  }
+
+  /* kartu murni tampilan, tidak bisa diklik — tanpa keadaan sorot atau fokus */
+  .home-card {
+    @apply flex flex-col border border-ink bg-paper-2;
+  }
+
+  .home-card__shot {
+    @apply relative aspect-[4/3] border-b border-ink bg-paper-3 overflow-hidden;
+  }
+
+  .home-card__shot img {
+    @apply block w-full h-full object-contain;
+  }
+
+  .home-card__placeholder {
+    @apply absolute inset-0 flex items-center justify-center text-center px-3 font-sans text-[0.62rem] tracking-[0.1em] uppercase text-ink-soft;
+  }
+
+  .home-card__name {
+    @apply m-0 py-2 px-2.5 font-sans text-[0.68rem] font-bold tracking-[0.08em] uppercase text-ink;
+  }
+
   /* ---------- daftar isi ---------- */
   .index {
-    @apply p-[clamp(16px,3vw,28px)];
+    @apply p-[clamp(16px,4vw,56px)];
+  }
+
+  .index__back {
+    @apply inline-block mb-6 py-2 px-3 border border-ink bg-transparent font-sans text-[0.68rem] font-bold tracking-[0.1em] uppercase text-ink
+      hover:bg-ink hover:text-paper
+      focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-2;
+  }
+
+  .index__head {
+    @apply flex flex-wrap items-end justify-between gap-3 mb-[18px];
   }
 
   .index__lead {
-    @apply m-0 mb-[18px] max-w-[52ch] text-[0.95rem] text-ink-soft;
+    @apply m-0 max-w-[52ch] text-[0.95rem] text-ink-soft;
   }
 
   .index__list {
@@ -381,6 +463,17 @@
   /* ---------- kolofon ---------- */
   .colophon {
     @apply m-0 py-2.5 px-[clamp(16px,3vw,28px)] border-t-[3px] border-double border-ink font-sans text-[0.66rem] tracking-[0.14em] uppercase text-ink-soft text-center;
+  }
+
+  /* ---------- soundbar: visualizer musik yang bisa diklik ---------- */
+  .soundbar {
+    @apply flex items-end self-start w-fit shrink-0 gap-[2px] h-7 py-1 px-1.5 border border-ink bg-transparent
+      hover:bg-paper-3
+      focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-2;
+  }
+
+  .soundbar__bar {
+    @apply block w-[3px] h-[6%] shrink-0 bg-ink;
   }
 }
 
