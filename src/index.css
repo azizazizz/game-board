@@ -1,0 +1,1022 @@
+@import 'tailwindcss';
+
+/* ---------- token desain: kertas hangat, tinta gelap, dua tinta pekat ---------- */
+@theme {
+  --color-paper: #e3ded1;
+  --color-paper-2: #d8d2c2;
+  --color-paper-3: #cec7b4;
+  --color-paper-4: #c2baa4;
+  --color-ink: #1f1d18;
+  --color-ink-soft: #6a6455;
+  --color-rule: #a8a08b;
+  --color-x: #8f2f1c;
+  --color-o: #1e4553;
+
+  /* delapan nada tinta redam untuk angka tetangga ranjau, bukan spektrum pelangi */
+  --color-n1: #1e4553;
+  --color-n2: #3f5b33;
+  --color-n3: #8f2f1c;
+  --color-n4: #7a4420;
+  --color-n5: #2f4858;
+  --color-n6: #2b5c55;
+  --color-n7: #1f1d18;
+  --color-n8: #6a6455;
+
+  --font-serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+  --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  /* animasi dipicu oleh peristiwa permainan (taruh, tangkap, menang, salah
+     langkah), bukan oleh :hover — lihat @layer utilities di bawah untuk detail */
+  --animate-ink: ink 0.3s linear forwards;
+  --animate-mark-pop: mark-pop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-fall: c4-fall 0.22s cubic-bezier(0.45, 0, 1, 1) both;
+  --animate-settle: settle 0.2s ease-out 0.18s both;
+  --animate-win-pulse: win-pulse 0.5s ease-out both;
+  --animate-pop-in: pop-in 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-board-shake: board-shake 0.32s ease both;
+  --animate-conflict-flash: conflict-flash 0.4s ease both;
+  --animate-check-pulse: check-pulse 0.9s ease-in-out 2;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-radius: 0;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply m-0 bg-paper text-ink font-serif text-base leading-[1.45];
+    color-scheme: light;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  /* ---------- kerangka halaman ---------- */
+  .page {
+    @apply min-h-full flex justify-center p-[clamp(16px,4vw,56px)];
+  }
+
+  .sheet {
+    @apply w-[min(1000px,100%)] border border-ink bg-paper;
+  }
+
+  .masthead {
+    @apply flex flex-wrap items-baseline justify-between gap-x-5 gap-y-2 border-b-[3px] border-double border-ink py-[18px] px-[clamp(16px,3vw,28px)];
+  }
+
+  .masthead__title {
+    @apply m-0 text-[clamp(1.6rem,4vw,2.3rem)] font-normal tracking-[0.16em] uppercase;
+  }
+
+  .masthead__meta {
+    @apply m-0 font-sans text-[0.68rem] tracking-[0.18em] uppercase text-ink-soft [font-variant-numeric:tabular-nums];
+  }
+
+  /* ---------- bilah nav ---------- */
+  .sections {
+    @apply flex items-stretch justify-between gap-3 border-b border-ink;
+  }
+
+  .section-back {
+    @apply py-2 px-[13px] border-0 bg-transparent font-sans text-[0.62rem] font-bold tracking-[0.1em] uppercase text-ink
+      hover:bg-ink hover:text-paper
+      focus-visible:outline-2 focus-visible:outline-ink focus-visible:-outline-offset-[3px];
+  }
+
+  .section-info {
+    @apply py-2 px-[13px] border-0 bg-transparent font-sans text-[0.62rem] font-bold tracking-[0.1em] uppercase text-ink-soft
+      hover:bg-paper-3 hover:text-ink
+      focus-visible:outline-2 focus-visible:outline-ink focus-visible:-outline-offset-[3px];
+  }
+
+  /* ---------- daftar isi ---------- */
+  .index {
+    @apply p-[clamp(16px,3vw,28px)];
+  }
+
+  .index__lead {
+    @apply m-0 mb-[18px] max-w-[52ch] text-[0.95rem] text-ink-soft;
+  }
+
+  .index__list {
+    @apply list-none m-0 p-0 border-t border-ink;
+  }
+
+  .index__list li {
+    @apply border-b border-rule;
+  }
+
+  .index__link {
+    @apply grid grid-cols-[44px_minmax(0,1fr)_auto] gap-x-4 gap-y-1.5 items-baseline w-full py-[13px] px-2.5 border-0 bg-transparent text-left
+      hover:bg-paper-2
+      focus-visible:outline-2 focus-visible:outline-ink focus-visible:-outline-offset-[3px];
+  }
+
+  .index__no {
+    @apply font-sans text-[0.7rem] tracking-[0.14em] text-ink-soft [font-variant-numeric:tabular-nums];
+  }
+
+  .index__text {
+    @apply block;
+  }
+
+  .index__name {
+    @apply block text-[1.2rem] leading-[1.3];
+  }
+
+  .index__blurb {
+    @apply block mt-[5px] text-[0.86rem] leading-[1.45] text-ink-soft;
+  }
+
+  .index__players {
+    @apply font-sans text-[0.58rem] font-bold tracking-[0.14em] uppercase text-ink-soft whitespace-nowrap;
+  }
+
+  /* ---------- tata letak permainan ---------- */
+  .layout {
+    @apply grid grid-cols-[minmax(0,1fr)_268px] max-[860px]:grid-cols-1;
+  }
+
+  .col {
+    @apply p-[clamp(16px,3vw,28px)] min-w-0;
+  }
+
+  .col--side {
+    @apply flex flex-col gap-5 border-l border-rule max-[860px]:border-l-0 max-[860px]:border-t max-[860px]:border-ink;
+  }
+
+  /* ---------- bingkai papan bersama ---------- */
+  .board-frame {
+    @apply grid grid-cols-[16px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)_18px] gap-1.5 w-[min(100%,var(--frame-width,400px))] mx-auto;
+  }
+
+  .board-frame--bare {
+    @apply grid-cols-[minmax(0,1fr)];
+  }
+
+  .board-frame--bare .board-plate,
+  .board-frame--bare .files {
+    @apply col-start-1;
+  }
+
+  .ranks,
+  .files {
+    @apply grid m-0 p-0 list-none font-sans text-[0.62rem] tracking-[0.14em] uppercase text-ink-soft;
+  }
+
+  .ranks {
+    @apply row-start-1 col-start-1 grid-rows-[repeat(var(--rows),1fr)] justify-items-center items-center;
+  }
+
+  .files {
+    @apply row-start-2 col-start-2 grid-cols-[repeat(var(--cols),1fr)] justify-items-center;
+  }
+
+  .board-plate {
+    @apply relative row-start-1 col-start-2 border border-ink bg-paper-2 overflow-hidden;
+    aspect-ratio: var(--cols) / var(--rows);
+  }
+
+  /* garis rambut sel terluar dipotong oleh pelat, jadi tepi papan tetap satu garis */
+  .grid {
+    @apply grid grid-cols-[repeat(var(--cols),1fr)] grid-rows-[repeat(var(--rows),1fr)] w-[calc(100%+1px)] h-[calc(100%+1px)];
+  }
+
+  .cell {
+    @apply relative grid place-items-center p-0 border-0 border-r border-b border-rule bg-transparent transition-transform duration-100 ease-out
+      enabled:active:scale-[0.94]
+      focus-visible:outline-2 focus-visible:outline-ink focus-visible:z-10 focus-visible:-outline-offset-4
+      disabled:cursor-default;
+  }
+
+  /* keadaan sorot berubah seketika, tanpa transisi warna; hanya :active yang beranimasi (transform) */
+  .cell--open:not(:disabled):hover {
+    @apply bg-paper-3;
+  }
+
+  .cell__coord {
+    @apply absolute top-1 left-[5px] font-sans text-[0.56rem] tracking-[0.1em] text-rule;
+  }
+
+  /* ---------- panel kanan ---------- */
+  .verdict {
+    @apply border-t border-b border-ink py-2.5 pb-3;
+  }
+
+  .verdict__label,
+  .block__title {
+    @apply m-0 font-sans text-[0.62rem] font-bold tracking-[0.2em] uppercase text-ink-soft;
+  }
+
+  .verdict__value {
+    @apply mt-0.5 text-[2.6rem] leading-[1.05] tracking-[0.02em] animate-pop-in;
+  }
+
+  .verdict__value--small {
+    @apply text-2xl;
+  }
+
+  .verdict__value--x {
+    @apply text-x;
+  }
+
+  .verdict__value--o {
+    @apply text-o;
+  }
+
+  .verdict__note {
+    @apply mt-1 text-[0.8rem] text-ink-soft;
+  }
+
+  .block {
+    @apply flex flex-col gap-2 min-w-0;
+  }
+
+  .block--grow {
+    @apply flex-1 min-h-0;
+  }
+
+  .block__title {
+    @apply pb-[5px] border-b border-rule;
+  }
+
+  /* ---------- buku besar ---------- */
+  .ledger {
+    @apply m-0;
+  }
+
+  .ledger__row {
+    @apply flex items-baseline justify-between gap-2.5 py-[5px] border-b border-dashed border-rule;
+  }
+
+  .ledger__row dt {
+    @apply text-[0.92rem];
+  }
+
+  .ledger__row dd {
+    @apply m-0 text-[1.15rem] [font-variant-numeric:tabular-nums];
+  }
+
+  .ledger__row--turn {
+    @apply border-ink [border-bottom-style:solid];
+  }
+
+  /* ---------- lembar langkah ---------- */
+  .sheet-table {
+    @apply w-full border-collapse [font-variant-numeric:tabular-nums];
+  }
+
+  .sheet-table th {
+    @apply font-sans text-[0.6rem] font-bold tracking-[0.16em] uppercase text-ink-soft text-left py-[3px] px-1 border-b border-rule;
+  }
+
+  .sheet-table td {
+    @apply p-0 border-b border-paper-3;
+  }
+
+  .sheet-table__num {
+    @apply w-[34px] text-ink-soft;
+  }
+
+  .sheet-table tbody th {
+    @apply border-b border-paper-3 font-sans text-[0.68rem] font-normal;
+  }
+
+  .scroll-y {
+    @apply max-h-[220px] overflow-y-auto;
+  }
+
+  .ply {
+    @apply block w-full py-1 px-1.5 border-0 bg-transparent text-[0.86rem] text-left
+      hover:bg-paper-3
+      focus-visible:outline-2 focus-visible:outline-ink focus-visible:-outline-offset-2;
+  }
+
+  .ply--empty {
+    @apply text-rule;
+  }
+
+  .ply--start {
+    @apply border border-rule text-[0.78rem];
+  }
+
+  .ply--current {
+    @apply bg-ink text-paper hover:bg-ink hover:text-paper;
+  }
+
+  /* ---------- kendali ---------- */
+  .controls {
+    @apply flex flex-col gap-1.5 mt-auto;
+  }
+
+  .btn-row {
+    @apply flex flex-wrap gap-1.5;
+  }
+
+  .btn {
+    @apply py-[9px] px-3 border border-ink bg-transparent font-sans text-[0.7rem] font-bold tracking-[0.14em] uppercase transition-transform duration-100 ease-out
+      hover:bg-ink hover:text-paper
+      enabled:active:scale-[0.96]
+      focus-visible:outline-2 focus-visible:outline-ink focus-visible:outline-offset-2
+      disabled:cursor-default disabled:border-rule disabled:text-rule disabled:hover:bg-transparent disabled:hover:text-rule;
+  }
+
+  .btn--solid {
+    @apply bg-ink text-paper hover:bg-paper hover:text-ink;
+  }
+
+  .btn--sm {
+    @apply flex-1 py-[7px] px-2 text-[0.62rem] tracking-[0.1em];
+  }
+
+  /* ---------- pemilih tingkat kesulitan, dipakai Minesweeper dan Sudoku ---------- */
+  .diff-row {
+    @apply flex gap-1.5;
+  }
+
+  .diff-btn {
+    @apply flex-1 py-[7px] px-1 border border-ink bg-transparent font-sans text-[0.62rem] font-bold tracking-[0.06em] uppercase transition-transform duration-100 ease-out
+      hover:bg-paper-3
+      enabled:active:scale-[0.96];
+  }
+
+  .diff-btn--current {
+    @apply bg-ink text-paper hover:bg-paper-3;
+  }
+
+  /* ---------- dialog aturan main ---------- */
+  .rules-dialog {
+    @apply w-[min(560px,92vw)] max-h-[80vh] m-auto p-0 border border-ink bg-paper text-ink [&::backdrop]:bg-ink/55;
+  }
+
+  .rules-dialog__head {
+    @apply flex items-baseline justify-between gap-3 border-b-[3px] border-double border-ink py-4 px-[clamp(16px,3vw,28px)];
+  }
+
+  .rules-dialog__title {
+    @apply m-0 text-[1.15rem] font-normal tracking-[0.02em];
+  }
+
+  .rules-dialog__body {
+    @apply py-4 px-[clamp(16px,3vw,28px)] pb-[22px] overflow-y-auto max-h-[calc(80vh-66px)];
+  }
+
+  .rules-dialog__body p {
+    @apply m-0 mb-3 text-[0.92rem] leading-[1.55] last:mb-0;
+  }
+
+  /* ---------- kolofon ---------- */
+  .colophon {
+    @apply m-0 py-2.5 px-[clamp(16px,3vw,28px)] border-t-[3px] border-double border-ink font-sans text-[0.66rem] tracking-[0.14em] uppercase text-ink-soft text-center;
+  }
+}
+
+/* =====================================================================
+   Bagian di bawah ini sengaja ditulis sebagai CSS biasa, bukan @apply:
+   selektor turunan/pseudo-elemen (.mark--ghost .stroke, dt::before, dsb)
+   dan properti presentasi SVG (stroke/fill langsung) tidak punya padanan
+   utility satu-ke-satu yang bersih. Warna tetap mengambil dari token
+   Tailwind di atas lewat var(--color-*), jadi satu sumber tetap terjaga.
+   ===================================================================== */
+
+/* riwayat & lembar langkah: penanda giliran aktif */
+.ledger__row--turn dt::before {
+  content: '\203A\00a0';
+}
+
+/* ---------- goresan tinta bersama (X/O) ---------- */
+.mark {
+  width: 56%;
+  height: 56%;
+}
+
+.stroke {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 7;
+  stroke-linecap: square;
+}
+
+.mark--x {
+  color: var(--color-x);
+}
+
+.mark--o {
+  color: var(--color-o);
+}
+
+.mark--inverted {
+  color: var(--color-paper);
+}
+
+.mark:not(.mark--ghost) {
+  animation: var(--animate-mark-pop);
+  transform-origin: center;
+}
+
+.mark:not(.mark--ghost) .stroke {
+  stroke-dasharray: 190;
+  stroke-dashoffset: 190;
+  animation: var(--animate-ink);
+}
+
+.mark:not(.mark--ghost) .stroke--2 {
+  animation-delay: 0.12s;
+}
+
+.mark--ghost {
+  visibility: hidden;
+  color: var(--color-rule);
+}
+
+.mark--ghost .stroke {
+  stroke-width: 5;
+}
+
+.cell--open:not(:disabled):hover .mark--ghost {
+  visibility: visible;
+}
+
+@keyframes ink {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes mark-pop {
+  0% {
+    transform: scale(0.55);
+    opacity: 0.5;
+  }
+  70% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ---------- cakram dan cincin, dipakai Othello, Connect Four, dan catur ---------- */
+.disc {
+  width: 74%;
+  height: 74%;
+}
+
+.disc circle {
+  stroke: var(--color-ink);
+  stroke-width: 3;
+}
+
+.disc--red circle {
+  fill: var(--color-x);
+}
+
+.disc--blue circle {
+  fill: var(--color-o);
+}
+
+.disc--dark circle {
+  fill: var(--color-ink);
+}
+
+.disc--light circle {
+  fill: var(--color-paper);
+}
+
+.disc--fresh {
+  animation: var(--animate-mark-pop);
+  transform-origin: center;
+}
+
+.disc--fresh circle {
+  stroke-dasharray: 240;
+  stroke-dashoffset: 240;
+  animation: var(--animate-ink);
+}
+
+/* cakram bayangan tujuan, garis rambut tanpa isi */
+.disc--hollow circle {
+  fill: none;
+  stroke: var(--color-rule);
+  stroke-width: 2;
+}
+
+.ring {
+  width: 34%;
+  height: 34%;
+}
+
+.ring circle {
+  fill: none;
+  stroke: var(--color-ink-soft);
+  stroke-width: 6;
+}
+
+/* ---------- perayaan kemenangan: dipicu saat kelas ini pertama kali
+   disematkan React (bukan hover), jadi selalu diputar tepat sekali ---------- */
+.cell--tt-win-x,
+.cell--tt-win-o,
+.c4-slot--win {
+  animation: var(--animate-win-pulse);
+}
+
+/* ---------- getar papan untuk langkah tidak sah (lihat useShake.js) ---------- */
+.board-shake {
+  animation: var(--animate-board-shake);
+}
+
+@keyframes win-pulse {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.06);
+  }
+  70% {
+    transform: scale(0.99);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    transform: translateY(3px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes board-shake {
+  20%,
+  60% {
+    transform: translateX(-4px);
+  }
+  40%,
+  80% {
+    transform: translateX(4px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes check-pulse {
+  0%,
+  100% {
+    background-color: var(--color-paper-4);
+  }
+  50% {
+    background-color: var(--color-x);
+  }
+}
+
+.chess-cell--check {
+  background: var(--color-paper-4);
+  outline: 2px solid var(--color-x);
+  outline-offset: -3px;
+  z-index: 1;
+  animation: var(--animate-check-pulse);
+}
+
+/* ---------- Tic Tac Toe ---------- */
+.cell--tt-win-x {
+  background: var(--color-x);
+}
+
+.cell--tt-win-o {
+  background: var(--color-o);
+}
+
+.cell--tt-win-x .cell__coord,
+.cell--tt-win-o .cell__coord {
+  color: var(--color-paper-2);
+}
+
+.win-line {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.win-line line {
+  stroke: var(--color-ink);
+  stroke-width: 4;
+  stroke-linecap: butt;
+  stroke-dasharray: 470;
+  stroke-dashoffset: 470;
+  animation: ink 0.32s 0.2s linear forwards;
+}
+
+/* ---------- Connect Four ---------- */
+.c4-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  width: calc(100% + 1px);
+  height: 100%;
+}
+
+.c4-col {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.c4-col:not(:disabled):hover {
+  background: var(--color-paper-3);
+}
+
+.c4-col:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: -4px;
+}
+
+.c4-col:disabled {
+  cursor: default;
+}
+
+.c4-slot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-right: 1px solid var(--color-rule);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.c4-slot--win {
+  outline: 2px solid var(--color-ink);
+  outline-offset: -3px;
+  background: var(--color-paper-4);
+}
+
+/* pembungkus perlu ukuran pasti supaya persentase ukuran cakram tetap terukur */
+.c4-drop {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  animation: var(--animate-fall);
+}
+
+.c4-drop > * {
+  animation: var(--animate-settle);
+  transform-origin: center;
+}
+
+@keyframes c4-fall {
+  from {
+    transform: translateY(-340%);
+  }
+}
+
+@keyframes settle {
+  0% {
+    transform: scaleX(1) scaleY(1);
+  }
+  40% {
+    transform: scaleX(1.16) scaleY(0.82);
+  }
+  100% {
+    transform: scaleX(1) scaleY(1);
+  }
+}
+
+/* ---------- Othello ---------- */
+.cell--legal {
+  cursor: pointer;
+}
+
+/* ---------- Minesweeper ---------- */
+.ms-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--color-ink);
+  background: var(--color-paper-2);
+}
+
+.ms-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--ms-cols), 26px);
+  grid-auto-rows: 26px;
+  width: max-content;
+}
+
+.ms-cell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-right: 1px solid var(--color-rule);
+  border-bottom: 1px solid var(--color-rule);
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: transform 0.1s ease-out;
+}
+
+.ms-cell:not(:disabled):active {
+  transform: scale(0.94);
+}
+
+.ms-cell--hidden:not(:disabled):hover {
+  background: var(--color-paper-3);
+}
+
+.ms-cell:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: -3px;
+  z-index: 1;
+}
+
+.ms-cell:disabled {
+  cursor: default;
+}
+
+.ms-cell--revealed {
+  background: var(--color-paper);
+  animation: pop-in 0.15s ease-out both;
+}
+
+.ms-cell--mine {
+  background: var(--color-x);
+}
+
+.ms-cell--hit {
+  background: var(--color-ink);
+  animation: board-shake 0.4s ease both;
+}
+
+.ms-cell--misflag {
+  color: var(--color-x);
+}
+
+.ms-num-1 {
+  color: var(--color-n1);
+}
+.ms-num-2 {
+  color: var(--color-n2);
+}
+.ms-num-3 {
+  color: var(--color-n3);
+}
+.ms-num-4 {
+  color: var(--color-n4);
+}
+.ms-num-5 {
+  color: var(--color-n5);
+}
+.ms-num-6 {
+  color: var(--color-n6);
+}
+.ms-num-7 {
+  color: var(--color-n7);
+}
+.ms-num-8 {
+  color: var(--color-n8);
+}
+
+.ms-icon {
+  width: 62%;
+  height: 62%;
+}
+
+.ms-icon--mine circle,
+.ms-icon--mine line {
+  stroke: var(--color-paper);
+}
+
+.ms-icon--mine circle {
+  fill: var(--color-ink);
+  stroke-width: 3;
+}
+
+.ms-icon--mine line {
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.ms-icon--flag {
+  animation: mark-pop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transform-origin: center;
+}
+
+.ms-icon--flag polygon {
+  fill: var(--color-x);
+}
+
+.ms-icon--flag line {
+  stroke: var(--color-ink);
+  stroke-width: 6;
+  stroke-linecap: square;
+}
+
+/* ---------- Sudoku ---------- */
+.sud-thick-right {
+  border-right: 2px solid var(--color-ink);
+}
+
+.sud-thick-bottom {
+  border-bottom: 2px solid var(--color-ink);
+}
+
+.sud-cell--given {
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.sud-cell--entry {
+  color: var(--color-o);
+}
+
+.sud-cell--entry .sud-value {
+  animation: mark-pop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  display: inline-block;
+}
+
+.sud-cell--peer {
+  background: var(--color-paper-3);
+}
+
+.sud-cell--conflict {
+  background: var(--color-paper-3);
+  color: var(--color-x);
+  animation: conflict-flash 0.4s ease both;
+}
+
+.sud-cell--selected {
+  background: var(--color-paper-4);
+  outline: 2px solid var(--color-ink);
+  outline-offset: -3px;
+  z-index: 1;
+}
+
+.sud-value {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.sud-notes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-sans);
+  font-size: 0.5rem;
+  color: var(--color-ink-soft);
+}
+
+.sud-notes span {
+  display: grid;
+  place-items: center;
+}
+
+@keyframes conflict-flash {
+  0%,
+  100% {
+    background-color: var(--color-paper-3);
+  }
+  50% {
+    background-color: var(--color-x);
+  }
+}
+
+.pad-grid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 4px;
+}
+
+.pad-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 6px 0;
+  border: 1px solid var(--color-ink);
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 0.86rem;
+  font-weight: 700;
+  transition: transform 0.1s ease-out;
+}
+
+.pad-btn:not(:disabled):hover {
+  background: var(--color-paper-3);
+}
+
+.pad-btn:not(:disabled):active {
+  transform: scale(0.92);
+}
+
+.pad-btn:disabled {
+  color: var(--color-rule);
+  border-color: var(--color-rule);
+  cursor: default;
+}
+
+.pad-btn__left {
+  font-size: 0.52rem;
+  font-weight: 400;
+  color: var(--color-ink-soft);
+}
+
+/* ---------- Catur ---------- */
+.chess-cell--light {
+  background: var(--color-paper-2);
+}
+
+.chess-cell--dark {
+  background: var(--color-paper-3);
+}
+
+.chess-cell--selected {
+  background: var(--color-paper-4);
+}
+
+.chess-cell--capture {
+  outline: 2px solid var(--color-ink);
+  outline-offset: -3px;
+  z-index: 1;
+}
+
+.chess-piece {
+  width: 74%;
+  height: 74%;
+  fill: currentColor;
+}
+
+.chess-piece--x {
+  color: var(--color-x);
+}
+
+.chess-piece--o {
+  color: var(--color-o);
+}
+
+.promo-row {
+  display: flex;
+  gap: 6px;
+}
+
+.promo-btn {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 8px 0;
+  border: 1px solid var(--color-ink);
+  background: transparent;
+  transition: transform 0.1s ease-out;
+}
+
+.promo-btn:hover {
+  background: var(--color-paper-3);
+}
+
+.promo-btn:active {
+  transform: scale(0.94);
+}
+
+.promo-btn .chess-piece {
+  width: 60%;
+  height: 60%;
+}
+
+/* ---------- layar sempit ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .mark .stroke,
+  .disc--fresh circle,
+  .win-line line {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+}
