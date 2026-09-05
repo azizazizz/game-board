@@ -16,7 +16,7 @@ export const GAMES = [
     Component: TicTacToe,
     rules: [
       'Dua pemain bergantian menandai petak kosong dengan X atau O pada papan tiga kali tiga. X selalu bermain lebih dulu.',
-      'Pemain pertama yang berhasil menyusun tiga tandanya berjajar lurus — mendatar, menurun, atau menyilang — memenangkan ronde. Jika seluruh sembilan petak terisi tanpa ada yang menang, ronde berakhir seri.',
+      'Pemain pertama yang berhasil menyusun tiga tandanya berjajar lurus (mendatar, menurun, atau menyilang) memenangkan ronde. Jika seluruh sembilan petak terisi tanpa ada yang menang, ronde berakhir seri.',
       'Klik salah satu baris pada lembar langkah untuk memutar ulang posisi sebelumnya. Bermain dari posisi lama akan menghapus langkah-langkah sesudahnya.',
     ],
   },
@@ -29,7 +29,7 @@ export const GAMES = [
     Component: ConnectFour,
     rules: [
       'Dua pemain bergantian menjatuhkan cakram ke salah satu dari tujuh kolom. Cakram selalu jatuh ke petak kosong paling bawah pada kolom yang dipilih.',
-      'Pemain pertama yang menyusun empat cakram miliknya berjajar — mendatar, menurun, atau menyilang — memenangkan papan. Papan penuh tanpa susunan empat dinyatakan seri.',
+      'Pemain pertama yang menyusun empat cakram miliknya berjajar (mendatar, menurun, atau menyilang) memenangkan papan. Papan penuh tanpa susunan empat dinyatakan seri.',
       'Warna Biru dapat dimainkan oleh bot yang mencari langkah terbaik beberapa langkah ke depan, atau dialihkan ke pemain manusia lewat tombol di panel.',
     ],
   },

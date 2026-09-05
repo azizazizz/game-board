@@ -2,26 +2,29 @@
 
 Enam papan permainan klasik dalam satu aplikasi React: Tic Tac Toe, Connect Four,
 Othello, Minesweeper, Sudoku, dan Catur. Semua dibungkus dalam satu tampilan
-bergaya kertas cetak — kertas hangat, tinta gelap, tanpa gradien atau bayangan.
+bergaya kertas cetak: kertas hangat, tinta gelap, tanpa gradien atau bayangan.
 
 ## Tech stack
 
-- **React 19** — seluruh UI adalah komponen fungsional dengan hooks (`useState`,
+- **React 19**: seluruh UI adalah komponen fungsional dengan hooks (`useState`,
   `useMemo`, `useCallback`, `useEffect`, `useRef`), tanpa state management
   eksternal (Redux, Zustand, dll).
-- **Vite 8** — dev server dan bundler, dengan `@vitejs/plugin-react`.
-- **Tailwind CSS 4** — lewat plugin `@tailwindcss/vite` (tanpa `tailwind.config.js`
+- **Vite 8**: dev server dan bundler, dengan `@vitejs/plugin-react`.
+- **Tailwind CSS 4**: lewat plugin `@tailwindcss/vite` (tanpa `tailwind.config.js`
   terpisah). Token desain (warna kertas/tinta, font) didefinisikan sekali lewat
   `@theme` di `src/index.css`; pola yang berulang di keenam game (sel papan,
   tombol, panel skor) dijadikan kelas komponen lewat `@apply` supaya tidak
   menduplikasi utility yang sama di banyak berkas.
-- **chess.js 1.4.0** — satu-satunya dependency non-framework, menangani seluruh
-  aturan catur (langkah legal, rokade, en passant, promosi, skak, skakmat, seri).
-- **Web Audio API** — efek suara disintesis langsung di browser (`AudioContext`),
+- **chess.js 1.4.0**: menangani seluruh aturan catur (langkah legal,
+  rokade, en passant, promosi, skak, skakmat, seri).
+- **Font Awesome (react-fontawesome + free-brands-svg-icons)**: logo asli
+  GitHub/Instagram/Facebook di footer. Paket gratis dari npm publik, tanpa
+  perlu akun atau Kit FontAwesome.
+- **Web Audio API**: efek suara disintesis langsung di browser (`AudioContext`),
   tanpa berkas audio.
-- **ESLint 10** — dikonfigurasi lewat `eslint.config.js`, dengan
+- **ESLint 10**: dikonfigurasi lewat `eslint.config.js`, dengan
   `eslint-plugin-react-hooks` dan `eslint-plugin-react-refresh`.
-- **pnpm** — package manager (lihat `pnpm-lock.yaml`).
+- **pnpm**: package manager (lihat `pnpm-lock.yaml`).
 
 Tidak ada backend, database, atau API eksternal. Aplikasi ini 100% berjalan
 di sisi klien; setiap permainan menyimpan state di memori komponen (menutup
@@ -63,7 +66,7 @@ src/
    └─ chess/                  (dibungkus di atas chess.js)
 ```
 
-Tidak ada lagi berkas `.css` per game — semua gaya, termasuk yang khusus
+Tidak ada lagi berkas `.css` per game; semua gaya, termasuk yang khusus
 satu permainan, hidup di `src/index.css` supaya Tailwind memprosesnya lewat
 satu titik masuk yang sama (menghindari CSS yang diproses berbeda-beda
 antar berkas).
@@ -71,7 +74,7 @@ antar berkas).
 ### Animasi
 
 Setiap sentuhan gerak dipicu oleh **peristiwa permainan** (taruh bidak,
-tangkap, menang, salah langkah), bukan oleh `:hover` — hover hanya mengganti
+tangkap, menang, salah langkah), bukan oleh `:hover`; hover hanya mengganti
 warna secara instan, tanpa transisi. Tekan tombol/papan (`:active`) memberi
 umpan balik skala kecil, dan `useShake` menggetarkan papan saat sebuah aksi
 ditolak (klik petak ilegal, mengetik ke petak kunci Sudoku, dll). Semua
@@ -115,18 +118,18 @@ Ada dua jalur musik yang terpisah:
   sebuah game dibuka. Tanpa berkas ini aplikasi tetap berjalan normal, hanya
   saja tidak ada suara (percobaan pemutaran gagal secara senyap).
 - **Setiap game** punya musik latarnya sendiri, dibangkitkan langsung lewat
-  Web Audio API — bukan berkas audio. `src/lib/musicEngine.js` adalah
+  Web Audio API, bukan berkas audio. `src/lib/musicEngine.js` adalah
   step-sequencer dua suara (bas + melodi) dengan penjadwalan model
   "lookahead" standar; `src/lib/musicThemes.js` mendefinisikan tangga nada,
   tempo, dan pola nada yang berbeda untuk tiap permainan (ceria dan cepat
   untuk Tic Tac Toe, tegang dan jarang untuk Minesweeper, tenang untuk
   Sudoku, dst). `src/lib/useGameMusic.js` membungkusnya jadi hook React;
   musik dimulai saat komponen game tampil dan berhenti (dijeda, bukan
-  ditutup — supaya aman terhadap siklus mount ganda React StrictMode di
+  ditutup, supaya aman terhadap siklus mount ganda React StrictMode di
   mode pengembangan) saat game ditinggalkan.
 
 Setiap panel game punya **soundbar** (`src/components/SoundBar.jsx`) di
-sebelah tombol "Suara" — sebuah visualizer yang benar-benar membaca data
+sebelah tombol "Suara": sebuah visualizer yang benar-benar membaca data
 frekuensi langsung dari `AnalyserNode` musik yang sedang berbunyi lewat
 `requestAnimationFrame`, bukan animasi hias. Klik soundbar untuk
 mematikan/menyalakan musik game tersebut.
@@ -139,28 +142,33 @@ halaman.
 
 Membuka aplikasi menampilkan tiga lapis navigasi:
 
-1. **Beranda** — halaman penuh tersendiri, tanpa bingkai kartu apa pun
+1. **Beranda**: halaman penuh tersendiri, tanpa bingkai kartu apa pun
    (lihat komponen `Home` di [`src/App.jsx`](src/App.jsx)). Tidak ada bilah
-   header terpisah — nama "Game Board" cukup tampil sekali, di `<section>`
+   header terpisah: nama "Game Board" cukup tampil sekali, di `<section>`
    kiri, supaya tidak ada dua judul berdempetan. Kolom kiri berisi
    `<section>` (nama) lalu tombol **"Masuk ke game"** lalu `<article>`
    (penjelasan singkat aplikasi ini); `<aside>` di kanan berisi galeri
-   cuplikan layar keenam game — murni gambar, kartunya **tidak bisa
+   cuplikan layar keenam game, murni gambar, kartunya **tidak bisa
    diklik**; `footer` penuh lebar di bawah. Tombol "Masuk ke game" adalah
    satu-satunya jalan menuju Daftar Game. Taruh cuplikan layar tiap game di
    `public/screenshots/<id-game>.png` (id sama seperti di
    [`src/games/registry.js`](src/games/registry.js), mis. `tictactoe.png`,
-   `chess.png`) — begitu berkasnya ada, gambar otomatis menggantikan kotak
+   `chess.png`); begitu berkasnya ada, gambar otomatis menggantikan kotak
    placeholder "SCREENSHOT ...". Beranda dilewati kalau tautan sudah
    menunjuk langsung ke sebuah game (mis. memuat ulang halaman saat berada
    di `#chess`).
-2. **Daftar Game** — juga halaman penuh tanpa bingkai kartu, senada dengan
+2. **Daftar Game**: juga halaman penuh tanpa bingkai kartu, senada dengan
    Beranda. Satu tombol kecil berkotak **"Kembali ke beranda"** di atas
    daftar (bukan bilah nav selebar halaman) membawa balik ke Beranda.
-3. **Game** — satu-satunya layar yang memakai kartu kertas bergaris tepi
-   (`.page`/`.sheet`) dengan masthead dan bilah nav — sengaja dibedakan
-   supaya "sedang bermain" terasa berbeda dari "sedang menjelajah". Klik
-   judul **"GAME BOARD"** di masthead kapan saja untuk kembali ke Beranda;
+   Kalimat pengantarnya menyebut posisi papan/panel yang berbeda di layar
+   lebar ("papan di kiri, panel di kanan") dan layar sempit ("papan di
+   atas, panel di bawah"), menyesuaikan titik lebar yang sama dengan
+   `.layout` (860px) tempat tata letak permainan itu sendiri berubah.
+3. **Game**: halaman penuh yang sama (`.flat-page`) dengan masthead
+   menampilkan nama game dan bilah nav di atasnya, lalu papan/panel, lalu
+   footer yang sama seperti Beranda dan Daftar Game di paling bawah; ketiga
+   layar sengaja disatukan gayanya, tanpa kartu terbungkus terpisah. Klik
+   judul **nama game** di masthead kapan saja untuk kembali ke Beranda;
    "Kembali ke daftar game" untuk selangkah saja. Setiap kali sebuah game
    dibuka, muncul dialog **"Selamat datang di ..."** otomatis (lihat
    `src/components/WelcomeDialog.jsx`) berisi ringkasan singkat dan tombol
@@ -172,17 +180,27 @@ Di dalam sebuah game, ada:
 - Tombol **Kembali ke daftar game** dan **Aturan main** di bilah nav atas.
 - Panel di sisi kanan berisi status permainan, skor, dan kendali (papan
   baru, hapus skor, suara efek, dan **tombol "Musik: aktif/mati"** yang
-  eksplisit di samping soundbar-nya — mematikan musik tidak harus lewat
+  eksplisit di samping soundbar-nya, jadi mematikan musik tidak harus lewat
   mengklik soundbar).
 - Lembar langkah / riwayat yang bisa diklik untuk memutar ulang posisi
   sebelumnya (Tic Tac Toe, Connect Four, Othello, Catur).
+
+Footer yang sama (komponen `SiteFooter` di `src/App.jsx`) tampil di ketiga
+layar dalam satu baris tiga kolom: hak cipta di kiri, nama "Game Board" dan
+deskripsi singkat benar-benar di tengah (kolom tengah lebar otomatis,
+kolom kiri/kanan sama lebar), dan tiga ikon media sosial (GitHub,
+Instagram, Facebook) di kanan, lewat `@fortawesome/react-fontawesome` +
+`@fortawesome/free-brands-svg-icons` (paket gratis, tanpa perlu akun atau
+Kit FontAwesome). Menyempit jadi satu kolom bertumpuk di layar sempit (di
+bawah 640px). Ganti URL di konstanta `SOCIAL_LINKS` (atas berkas
+`src/App.jsx`) dengan akun yang sebenarnya (Facebook masih placeholder).
 
 Ringkasan tiap permainan ada di dialog "Aturan main" masing-masing, atau
 lihat `rules` di [`src/games/registry.js`](src/games/registry.js).
 
 ## Catatan pengembangan
 
-Proyek ini tidak memakai TypeScript maupun test runner otomatis — logika
+Proyek ini tidak memakai TypeScript maupun test runner otomatis; logika
 inti tiap permainan (deteksi menang, bot, pembangkit papan) diverifikasi
 manual dengan skrip Node terpisah selama pengembangan. Jika menambah game
 baru, ikuti pola yang sudah ada: `logic.js` murni tanpa React, komponen

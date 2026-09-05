@@ -1,12 +1,50 @@
 import { useEffect, useRef, useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faGithub, faInstagram, faFacebook } from '@fortawesome/free-brands-svg-icons'
 import { GAMES, findGame } from './games/registry'
 import RulesDialog from './components/RulesDialog'
 import { useMenuMusic } from './lib/useMenuMusic'
 
-// slot cuplikan layar tiap game: taruh berkas di public/screenshots/<id>.png
-// dan gambarnya otomatis muncul di sini begitu tersedia. Sebelum itu, tempat
-// ini tampil sebagai kotak berlabel supaya tetap jelas ruang mana yang
-// disiapkan untuk gambar apa.
+const SOCIAL_LINKS = [
+  { label: 'GitHub', href: 'https://github.com/azizazizz', icon: faGithub },
+  { label: 'Instagram', href: 'https://www.instagram.com/azizraihan_/', icon: faInstagram },
+  { label: 'Facebook', href: 'https://www.facebook.com/nur.azizraihan.5', icon: faFacebook },
+]
+
+// footer
+function SiteFooter() {
+  return (
+    <footer className="footer">
+      <p className="footer__copyright">© 2026 Nur Aziz Raihan</p>
+
+      <div className="footer__brand">
+        <p className="footer__brand-title">Game Board</p>
+        <p className="footer__brand-desc">
+          Enam papan permainan klasik dalam satu kerangka kertas-dan-tinta yang sama.
+        </p>
+      </div>
+
+      <ul className="footer__social">
+        {SOCIAL_LINKS.map((link) => (
+          <li key={link.label}>
+            <a
+              className="footer__social-link"
+              href={link.href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={link.label}
+              title={link.label}
+            >
+              <FontAwesomeIcon icon={link.icon} className="footer__social-icon" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </footer>
+  )
+}
+
+// slot cuplikan layar tiap game
 function HomeShot({ id, name }) {
   const [failed, setFailed] = useState(false)
 
@@ -25,12 +63,7 @@ function HomeShot({ id, name }) {
   )
 }
 
-// beranda adalah halaman penuh tersendiri, tanpa bingkai kartu apa pun.
-// Tanpa header terpisah — nama "Game Board" cukup sekali, di section kiri —
-// supaya tidak ada dua judul berdempetan. section (nama) dan article
-// (penjelasan) bersusun di kiri dengan tombol "Masuk ke game" di celah
-// antara keduanya; aside berisi galeri cuplikan layar (murni gambar, tidak
-// bisa diklik) membentang di kanan; footer di paling bawah.
+// beranda
 function Home({ onEnterIndex }) {
   return (
     <div className="flat-page">
@@ -47,8 +80,8 @@ function Home({ onEnterIndex }) {
 
           <article className="home__article">
             <p>
-              Enam papan permainan klasik — Tic Tac Toe, Connect Four, Othello, Minesweeper,
-              Sudoku, dan Catur — dibungkus satu kerangka kertas-dan-tinta yang sama. Setiap
+              Enam papan permainan klasik, yaitu Tic Tac Toe, Connect Four, Othello, Minesweeper,
+              Sudoku, dan Catur, dibungkus satu kerangka kertas-dan-tinta yang sama. Setiap
               permainan punya musik latarnya sendiri, bot lawan untuk yang membutuhkan, dan
               lembar langkah yang bisa diputar ulang.
             </p>
@@ -70,14 +103,12 @@ function Home({ onEnterIndex }) {
         </aside>
       </div>
 
-      <footer className="flat-page__footer">© 2026 Nur Aziz Raihan</footer>
+      <SiteFooter />
     </div>
   )
 }
 
-// daftar isi juga halaman penuh tanpa bingkai kartu, senada dengan beranda.
-// Jalan pulang ke beranda ditaruh sebagai tautan ringan di atas, bukan bilah
-// nav tebal, supaya tetap terasa satu alur yang sama dengan beranda.
+// daftar isi
 function GameIndex({ onOpen, onGoHome, musicMuted, onToggleMusic }) {
   return (
     <div className="flat-page">
@@ -88,8 +119,15 @@ function GameIndex({ onOpen, onGoHome, musicMuted, onToggleMusic }) {
 
         <div className="index__head">
           <p className="index__lead">
-            Enam papan permainan yang berbagi satu kerangka: papan di kiri, panel catatan di
-            kanan, dicetak di atas kertas yang sama. Pilih satu daftar di bawah.
+            {/* susunan papan/panel berbeda di layar sempit */}
+            <span className="max-[860px]:hidden">
+              Enam papan permainan yang berbagi satu kerangka: papan di kiri, panel catatan di
+              kanan, dicetak di atas kertas yang sama. Pilih satu daftar di bawah.
+            </span>
+            <span className="hidden max-[860px]:inline">
+              Enam papan permainan yang berbagi satu kerangka: papan di atas, panel catatan di
+              bawah, dicetak di atas kertas yang sama. Pilih satu daftar di bawah.
+            </span>
           </p>
           <button
             type="button"
@@ -117,7 +155,7 @@ function GameIndex({ onOpen, onGoHome, musicMuted, onToggleMusic }) {
         </ol>
       </div>
 
-      <footer className="flat-page__footer">© 2026 Nur Aziz Raihan</footer>
+      <SiteFooter />
     </div>
   )
 }
@@ -125,7 +163,6 @@ function GameIndex({ onOpen, onGoHome, musicMuted, onToggleMusic }) {
 export default function App() {
   const [activeId, setActiveId] = useState(null)
   // lewati beranda kalau tautan sudah menunjuk langsung ke sebuah game
-  // (mis. muat ulang halaman saat berada di #chess)
   const [showHome, setShowHome] = useState(() => {
     const id = window.location.hash.replace('#', '')
     return !findGame(id)
@@ -166,8 +203,8 @@ export default function App() {
   const Active = active?.Component ?? null
   const [musicMuted, setMusicMuted] = useMenuMusic(!active)
 
-  // beranda dan daftar isi adalah halaman penuh tersendiri, tanpa kartu
-  // .page/.sheet — kartu itu kini menandai satu hal saja: sedang bermain.
+  // beranda, daftar game, dan layar game semuanya halaman penuh yang
+  // senada (.flat-page), tanpa kartu terbungkus terpisah.
   if (showHome) {
     return <Home onEnterIndex={() => setShowHome(false)} />
   }
@@ -184,29 +221,27 @@ export default function App() {
   }
 
   return (
-    <div className="page">
-      <article className="sheet">
-        <header className="masthead">
-          <h1 className="masthead__title">
-            <button type="button" className="masthead__title-btn" onClick={goHome}>
-              {active.name}
-            </button>
-          </h1>
-        </header>
-
-        <nav className="sections" aria-label="Navigasi permainan">
-          <button type="button" className="section-back" onClick={() => open(null)}>
-            Kembali ke daftar game
+    <div className="flat-page">
+      <header className="masthead">
+        <h1 className="masthead__title">
+          <button type="button" className="masthead__title-btn" onClick={goHome}>
+            {active.name}
           </button>
-          <button type="button" className="section-info" onClick={() => rulesRef.current?.showModal()}>
-            Aturan main
-          </button>
-        </nav>
+        </h1>
+      </header>
 
-        <Active />
+      <nav className="sections" aria-label="Navigasi permainan">
+        <button type="button" className="section-back" onClick={() => open(null)}>
+          Kembali ke daftar game
+        </button>
+        <button type="button" className="section-info" onClick={() => rulesRef.current?.showModal()}>
+          Aturan main
+        </button>
+      </nav>
 
-        <footer className="colophon">© 2026 Nur Aziz Raihan</footer>
-      </article>
+      <Active />
+
+      <SiteFooter />
 
       <RulesDialog ref={rulesRef} title={active.name} rules={active.rules} />
     </div>

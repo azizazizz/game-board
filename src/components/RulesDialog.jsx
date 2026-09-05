@@ -11,7 +11,7 @@ const RulesDialog = forwardRef(function RulesDialog({ title, rules }, ref) {
     <dialog ref={ref} className="rules-dialog" onClick={onBackdropClick} aria-labelledby="rules-title">
       <div className="rules-dialog__head">
         <h2 id="rules-title" className="rules-dialog__title">
-          Aturan main — {title}
+          Aturan main: {title}
         </h2>
         <button
           type="button"
